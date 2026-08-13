@@ -1,168 +1,205 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import {
-  Box,
-  Button,
-  Container,
-  TextField,
-  Typography,
-  Alert,
-  CircularProgress,
-  Paper,
-  InputAdornment,
-} from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { apiService } from '@/services/api';
-import { loginSuccess, loginFailure } from '@/store/authSlice';
-import { AppDispatch } from '@/store';
-
-// Validation schema
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiService } from "@/services/api";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true);
-    setError(null);
+  const handleLogin = async (
+    e: React.FormEvent
+  ) => {
+    e.preventDefault();
+
+    setError("");
+    setLoading(true);
 
     try {
-      const tokens = await apiService.login(data);
-      dispatch(loginSuccess({
-        user: {
-          id: '',
-          email: data.email,
-          name: '',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        },
-        tokens,
-      }));
-      navigate('/dashboard');
-    } catch (err) {
-      const errorMessage = apiService.getErrorMessage(err);
-      setError(errorMessage);
-      dispatch(loginFailure(errorMessage));
+      await apiService.login({
+        email,
+        password,
+      });
+
+      await apiService.getCurrentUser();
+
+      navigate("/");
+    } catch (err: any) {
+      setError(
+        err.response?.data?.detail ||
+        "Invalid email or password"
+      );
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      }}
-    >
-      <Container maxWidth="sm">
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h3" align="center" sx={{ mb: 1, fontWeight: 'bold' }}>
-            EviMatch
-          </Typography>
-          <Typography variant="subtitle1" align="center" color="textSecondary" sx={{ mb: 4 }}>
-            Sign In to Your Account
-          </Typography>
+    <div className="min-h-screen bg-slate-950 flex">
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {/* LEFT SIDE */}
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Email Address"
-                  type="email"
-                  margin="normal"
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
-                  autoComplete="email"
-                  disabled={isLoading}
-                />
-              )}
-            />
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-700 to-purple-800 p-16 items-center">
 
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  margin="normal"
-                  error={!!errors.password}
-                  helperText={errors.password?.message}
-                  autoComplete="current-password"
-                  disabled={isLoading}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Button
-                          size="small"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </Button>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              )}
-            />
+        <div className="absolute w-96 h-96 bg-white/10 rounded-full -top-20 -left-20 blur-3xl" />
 
-            <Button
-              fullWidth
-              variant="contained"
-              size="large"
-              sx={{ mt: 3, mb: 2 }}
-              type="submit"
-              disabled={isLoading}
+        <div className="relative max-w-xl text-white">
+
+          <div className="flex items-center gap-3 mb-10">
+
+            <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-xl font-bold">
+              E
+            </div>
+
+            <span className="text-2xl font-bold">
+              EviMatch
+            </span>
+
+          </div>
+
+          <h1 className="text-5xl font-bold leading-tight">
+            Your resume.
+            <br />
+            Your career.
+            <br />
+            <span className="text-blue-200">
+              Powered by AI.
+            </span>
+          </h1>
+
+          <p className="text-blue-100 text-lg mt-6 leading-relaxed">
+            Analyze your resume, discover your strengths,
+            improve your ATS score, and find opportunities
+            that match your skills.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      {/* RIGHT SIDE */}
+
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
+
+        <div className="w-full max-w-md">
+
+          <div className="lg:hidden text-center mb-10">
+
+            <div className="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-xl">
+              E
+            </div>
+
+            <h1 className="text-white text-2xl font-bold mt-3">
+              EviMatch
+            </h1>
+
+          </div>
+
+
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+
+            <h2 className="text-3xl font-bold text-white">
+              Welcome back
+            </h2>
+
+            <p className="text-slate-400 mt-2 mb-8">
+              Sign in to continue to your dashboard.
+            </p>
+
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 mb-5 text-sm">
+                {error}
+              </div>
+            )}
+
+
+            <form
+              onSubmit={handleLogin}
+              className="space-y-5"
             >
-              {isLoading ? <CircularProgress size={24} /> : 'Sign In'}
-            </Button>
-          </form>
 
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2">
-              Don't have an account?{' '}
-              <Link to="/register" style={{ color: '#667eea', textDecoration: 'none' }}>
-                <strong>Sign Up</strong>
-              </Link>
-            </Typography>
-          </Box>
-        </Paper>
-      </Container>
-    </Box>
+              <div>
+
+                <label className="text-sm text-slate-300 block mb-2">
+                  Email
+                </label>
+
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) =>
+                    setEmail(e.target.value)
+                  }
+                  placeholder="you@example.com"
+                  required
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500"
+                />
+
+              </div>
+
+
+              <div>
+
+                <label className="text-sm text-slate-300 block mb-2">
+                  Password
+                </label>
+
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) =>
+                    setPassword(e.target.value)
+                  }
+                  placeholder="Enter your password"
+                  required
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500"
+                />
+
+              </div>
+
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3.5 rounded-xl transition disabled:opacity-50"
+              >
+                {loading
+                  ? "Signing in..."
+                  : "Sign In"}
+              </button>
+
+            </form>
+
+
+            <div className="text-center mt-7">
+
+              <p className="text-slate-400 text-sm">
+                Don't have an account?
+              </p>
+
+              <button
+                onClick={() =>
+                  navigate("/register")
+                }
+                className="text-blue-400 hover:text-blue-300 font-semibold mt-1"
+              >
+                Create an account
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
   );
 };
 

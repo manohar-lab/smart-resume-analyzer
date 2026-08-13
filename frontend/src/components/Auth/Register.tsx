@@ -1,214 +1,157 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import {
-  Box,
-  Button,
-  Container,
-  TextField,
-  Typography,
-  Alert,
-  CircularProgress,
-  Paper,
-  InputAdornment,
-} from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { apiService } from '@/services/api';
-import { registerSuccess, registerFailure } from '@/store/authSlice';
-import { AppDispatch } from '@/store';
-
-// Validation schema
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiService } from "@/services/api";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-    },
-  });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const onSubmit = async (data: RegisterFormData) => {
-    setIsLoading(true);
-    setError(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleRegister = async (
+    e: React.FormEvent
+  ) => {
+    e.preventDefault();
+
+    setError("");
+    setLoading(true);
 
     try {
-      const tokens = await apiService.register({
-        email: data.email,
-        password: data.password,
-        name: data.name,
+      await apiService.register({
+        name,
+        email,
+        password,
       });
-      dispatch(registerSuccess({
-        user: {
-          id: '',
-          email: data.email,
-          name: data.name,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        },
-        tokens,
-      }));
-      navigate('/dashboard');
-    } catch (err) {
-      const errorMessage = apiService.getErrorMessage(err);
-      setError(errorMessage);
-      dispatch(registerFailure(errorMessage));
+
+      await apiService.getCurrentUser();
+
+      navigate("/");
+
+    } catch (err: any) {
+      console.error(
+        "Registration error:",
+        err
+      );
+
+      setError(
+        err.response?.data?.detail ||
+        "Registration failed."
+      );
+
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      }}
-    >
-      <Container maxWidth="sm">
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h3" align="center" sx={{ mb: 1, fontWeight: 'bold' }}>
-            EviMatch
-          </Typography>
-          <Typography variant="subtitle1" align="center" color="textSecondary" sx={{ mb: 4 }}>
-            Create Your Account
-          </Typography>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Full Name"
-                  margin="normal"
-                  error={!!errors.name}
-                  helperText={errors.name?.message}
-                  disabled={isLoading}
-                />
-              )}
+        <h1 className="text-3xl font-bold text-center mb-2">
+          Create Account
+        </h1>
+
+        <p className="text-gray-500 text-center mb-8">
+          EviMatch Resume Analyzer
+        </p>
+
+        {error && (
+          <div className="mb-5 p-3 bg-red-100 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <form
+          onSubmit={handleRegister}
+          className="space-y-5"
+        >
+
+          <div>
+            <label className="block mb-2 font-medium">
+              Name
+            </label>
+
+            <input
+              type="text"
+              value={name}
+              onChange={(e) =>
+                setName(e.target.value)
+              }
+              placeholder="Enter your name"
+              required
+              className="w-full border rounded-lg px-4 py-3"
             />
+          </div>
 
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Email Address"
-                  type="email"
-                  margin="normal"
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
-                  autoComplete="email"
-                  disabled={isLoading}
-                />
-              )}
+
+          <div>
+            <label className="block mb-2 font-medium">
+              Email
+            </label>
+
+            <input
+              type="email"
+              value={email}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
+              placeholder="Enter your email"
+              required
+              className="w-full border rounded-lg px-4 py-3"
             />
+          </div>
 
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  margin="normal"
-                  error={!!errors.password}
-                  helperText={errors.password?.message || 'Min 8 chars, 1 uppercase, 1 number'}
-                  disabled={isLoading}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Button
-                          size="small"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </Button>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              )}
+
+          <div>
+            <label className="block mb-2 font-medium">
+              Password
+            </label>
+
+            <input
+              type="password"
+              value={password}
+              onChange={(e) =>
+                setPassword(e.target.value)
+              }
+              placeholder="Enter password"
+              required
+              className="w-full border rounded-lg px-4 py-3"
             />
+          </div>
 
-            <Controller
-              name="confirmPassword"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Confirm Password"
-                  type={showPassword ? 'text' : 'password'}
-                  margin="normal"
-                  error={!!errors.confirmPassword}
-                  helperText={errors.confirmPassword?.message}
-                  disabled={isLoading}
-                />
-              )}
-            />
 
-            <Button
-              fullWidth
-              variant="contained"
-              size="large"
-              sx={{ mt: 3, mb: 2 }}
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? <CircularProgress size={24} /> : 'Create Account'}
-            </Button>
-          </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg disabled:opacity-50"
+          >
+            {loading
+              ? "Creating account..."
+              : "Register"}
+          </button>
 
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2">
-              Already have an account?{' '}
-              <Link to="/login" style={{ color: '#667eea', textDecoration: 'none' }}>
-                <strong>Sign In</strong>
-              </Link>
-            </Typography>
-          </Box>
-        </Paper>
-      </Container>
-    </Box>
+        </form>
+
+
+        <p className="text-center text-gray-600 mt-6">
+          Already have an account?{" "}
+
+          <button
+            onClick={() => navigate("/login")}
+            className="text-blue-600 font-semibold"
+          >
+            Login
+          </button>
+        </p>
+
+      </div>
+
+    </div>
   );
 };
 
