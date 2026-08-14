@@ -1,0 +1,40 @@
+{
+  "name": "evi-match-ui",
+  "version": "1.0.0",
+  "description": "Evidence-Aware and Uncertainty-Driven AI System for Candidate–Job Matching and Skill Verification",
+  "private": true,
+  "type": "module",
+  "main": "src/main.tsx",
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-react": "^7.27.0",
+    "typescript": "^4.5.0",
+    "vite": "^8.2.1"
+  },
+  "keywords": [
+    "AI",
+    "job matching",
+    "candidate verification",
+    "frontend",
+    "React"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
