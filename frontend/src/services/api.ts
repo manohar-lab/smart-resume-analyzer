@@ -10,11 +10,10 @@ import {
   SkillDetected,
 } from '@/types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000/api';
 
 class ApiService {
   private client: AxiosInstance;
-  private accessToken: string | null = null;
 
   constructor() {
     this.client = axios.create({
@@ -53,16 +52,12 @@ class ApiService {
             } catch (refreshError) {
               // Refresh failed, clear auth
               this.clearTokens();
-              window.location.href = '/login';
             }
           }
         }
         return Promise.reject(error);
       }
     );
-
-    // Load tokens from localStorage
-    this.accessToken = this.getAccessToken();
   }
 
   // ============== TOKEN MANAGEMENT ==============
@@ -78,13 +73,20 @@ class ApiService {
   private setTokens(accessToken: string, refreshToken: string): void {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
-    this.accessToken = accessToken;
   }
 
   private clearTokens(): void {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    this.accessToken = null;
+  }
+
+  getStoredUser(): User | null {
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch {
+      return null;
+    }
   }
 
   // ============== AUTHENTICATION ==============
@@ -126,6 +128,17 @@ class ApiService {
 
   async createAnalysis(data: AnalysisRequest): Promise<Analysis> {
     const response = await this.client.post<Analysis>('/analysis', data);
+    return response.data;
+  }
+
+  async uploadResume(file: File): Promise<Analysis> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await this.client.post<Analysis>('/analysis/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 

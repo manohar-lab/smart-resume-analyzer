@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { apiService } from "@/services/api";
 
 const Home: React.FC = () => {
-  const navigate = useNavigate();
 
   const [user, setUser] =
     useState<any>(null);
@@ -17,36 +15,17 @@ const Home: React.FC = () => {
 
   const loadUser = async () => {
     try {
-      if (!apiService.isAuthenticated()) {
-        navigate("/login");
-        return;
-      }
-
-      const currentUser =
-        await apiService.getCurrentUser();
-
+      const currentUser = await apiService.getCurrentUser();
       setUser(currentUser);
-
     } catch (error) {
       console.error(
-        "Authentication error:",
+        "Could not load user:",
         error
       );
-
-      navigate("/login");
-
     } finally {
       setLoading(false);
     }
   };
-
-
-  const handleLogout = async () => {
-    await apiService.logout();
-
-    navigate("/login");
-  };
-
 
   if (loading) {
     return (
@@ -69,13 +48,6 @@ const Home: React.FC = () => {
           <h1 className="text-2xl font-bold">
             EviMatch
           </h1>
-
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg"
-          >
-            Logout
-          </button>
 
         </div>
 

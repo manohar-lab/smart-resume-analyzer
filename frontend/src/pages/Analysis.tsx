@@ -37,16 +37,6 @@ const Analysis: React.FC = () => {
     user?.name || "User";
 
 
-  const handleLogout = async () => {
-
-    await apiService.logout();
-
-    navigate(
-      "/login",
-      { replace: true }
-    );
-  };
-
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -246,16 +236,6 @@ const Analysis: React.FC = () => {
         </div>
 
 
-        <div className="sidebar-bottom">
-
-          <button
-            className="logout-button"
-            onClick={handleLogout}
-          >
-            🚪 Logout
-          </button>
-
-        </div>
 
       </aside>
 

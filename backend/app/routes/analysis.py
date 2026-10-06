@@ -17,36 +17,30 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/analysis", tags=["Analysis"])
 
 def get_current_user(authorization: str = None, db: Session = Depends(get_db)) -> User:
-    """Dependency to get current authenticated user"""
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authorization header"
-        )
+    """Dependency to get current user, falling back to default user if unauthenticated"""
+    if authorization:
+        try:
+            token = authorization.split(" ")[1] if " " in authorization else authorization
+            token_data = AuthService.verify_token(token, token_type="access")
+            if token_data:
+                user = db.query(User).filter(User.id == token_data.user_id).first()
+                if user:
+                    return user
+        except Exception:
+            pass
     
-    try:
-        token = authorization.split(" ")[1]
-    except IndexError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format"
-        )
-    
-    token_data = AuthService.verify_token(token, token_type="access")
-    
-    if not token_data:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
-        )
-    
-    user = db.query(User).filter(User.id == token_data.user_id).first()
-    
+    # Fallback default user so no account creation/registration is required
+    user = db.query(User).filter(User.email == "user@evimatch.local").first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+        user = User(
+            email="user@evimatch.local",
+            name="User",
+            password_hash=AuthService.hash_password("default123"),
+            is_active=True
         )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
     
     return user
 

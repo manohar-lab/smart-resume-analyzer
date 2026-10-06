@@ -8,15 +8,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Create database engine with connection pooling
-engine = create_engine(
-    settings.DATABASE_URL,
-    echo=settings.SQLALCHEMY_ECHO,
-    poolclass=QueuePool,
-    pool_size=20,
-    max_overflow=40,
-    pool_pre_ping=True,
-    pool_recycle=3600,
-)
+if "sqlite" in settings.DATABASE_URL:
+    engine = create_engine(
+        settings.DATABASE_URL,
+        echo=settings.SQLALCHEMY_ECHO,
+        connect_args={"check_same_thread": False},
+    )
+else:
+    engine = create_engine(
+        settings.DATABASE_URL,
+        echo=settings.SQLALCHEMY_ECHO,
+        poolclass=QueuePool,
+        pool_size=20,
+        max_overflow=40,
+        pool_pre_ping=True,
+        pool_recycle=3600,
+    )
 
 # Create session factory
 SessionLocal = sessionmaker(

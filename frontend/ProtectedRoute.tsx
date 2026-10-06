@@ -15,29 +15,6 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<
   ProtectedRouteProps
 > = ({ children }) => {
-
-  const location =
-    useLocation();
-
-
-  const authenticated =
-    apiService.isAuthenticated();
-
-
-  if (!authenticated) {
-
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{
-          from: location.pathname,
-        }}
-      />
-    );
-  }
-
-
   return <>{children}</>;
 };
 

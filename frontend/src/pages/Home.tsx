@@ -17,16 +17,6 @@ const Home: React.FC = () => {
     "user@example.com";
 
 
-  const handleLogout = async () => {
-
-    await apiService.logout();
-
-    navigate(
-      "/login",
-      { replace: true }
-    );
-  };
-
 
   return (
 
@@ -106,20 +96,6 @@ const Home: React.FC = () => {
         </div>
 
 
-        <div className="sidebar-bottom">
-
-          <button
-            className="logout-button"
-            onClick={handleLogout}
-          >
-            <span>
-              🚪
-            </span>
-
-            Logout
-          </button>
-
-        </div>
 
       </aside>
 

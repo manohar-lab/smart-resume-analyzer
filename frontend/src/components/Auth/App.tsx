@@ -6,9 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import Login from "./components/Auth/Login";
-import Register from "./components/Auth/Register";
-import Home from "./pages/Home";
+import Home from "@/pages/Home";
 
 const App: React.FC = () => {
   return (
@@ -18,12 +16,12 @@ const App: React.FC = () => {
 
         <Route
           path="/login"
-          element={<Login />}
+          element={<Navigate to="/" replace />}
         />
 
         <Route
           path="/register"
-          element={<Register />}
+          element={<Navigate to="/" replace />}
         />
 
         <Route

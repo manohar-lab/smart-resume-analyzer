@@ -26,7 +26,6 @@ const Header = () => {
             </nav>
             <div className="header__user">
                 <Link to="/profile">Profile</Link>
-                <Link to="/logout">Logout</Link>
             </div>
         </header>
     );

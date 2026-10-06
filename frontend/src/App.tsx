@@ -11,10 +11,6 @@ import { setCurrentUser } from "@/store/authSlice";
 
 import { apiService } from "@/services/api";
 
-import Login from "@/components/Auth/Login";
-import Register from "@/components/Auth/Register";
-import ProtectedRoute from "@/components/Auth/ProtectedRoute";
-
 import Home from "@/pages/Home";
 import Analysis from "@/pages/Analysis";
 import AnalysisDetail from "@/pages/AnalysisDetail";
@@ -103,10 +99,6 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     const loadUser = async () => {
-      if (!apiService.isAuthenticated()) {
-        return;
-      }
-
       try {
         const user = await apiService.getCurrentUser();
 
@@ -136,12 +128,12 @@ const AppContent: React.FC = () => {
 
         <Route
           path="/login"
-          element={<Login />}
+          element={<Navigate to="/" replace />}
         />
 
         <Route
           path="/register"
-          element={<Register />}
+          element={<Navigate to="/" replace />}
         />
 
 
@@ -149,11 +141,7 @@ const AppContent: React.FC = () => {
 
         <Route
           path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
+          element={<Home />}
         />
 
 
@@ -172,21 +160,13 @@ const AppContent: React.FC = () => {
 
         <Route
           path="/analysis"
-          element={
-            <ProtectedRoute>
-              <Analysis />
-            </ProtectedRoute>
-          }
+          element={<Analysis />}
         />
 
 
         <Route
           path="/analysis/:analysisId"
-          element={
-            <ProtectedRoute>
-              <AnalysisDetail />
-            </ProtectedRoute>
-          }
+          element={<AnalysisDetail />}
         />
 
 
@@ -194,11 +174,7 @@ const AppContent: React.FC = () => {
 
         <Route
           path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePlaceholder />
-            </ProtectedRoute>
-          }
+          element={<ProfilePlaceholder />}
         />
 
 
